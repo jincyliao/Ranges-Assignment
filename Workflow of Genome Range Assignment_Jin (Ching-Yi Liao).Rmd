@@ -6,7 +6,7 @@ output: html_document
 Sildes 132-139 of the Genomic Ranges lecture
 Buffalo book Chapter 9, pp 325-327
 
-##Set up##
+##Set up
 
 ```{r}
 source("http://bioconductor.org/biocLite.R")
@@ -22,29 +22,29 @@ txdb <- TxDb.Mmusculus.UCSC.mm10.ensGene
 txdb
 ```
 
-# Extract variants by exons that are represented by genomic ranges#
+# Extract variants by exons that are represented by genomic ranges
 
-#1. Import a file with variants (SNPs, indels, etc...) from chr1 of *Mus musculus*#
+#1. Import a file with variants (SNPs, indels, etc...) from chr1 of *Mus musculus*
 
 ```{r}
 setwd("C:/Users/user/bds-files/chapter-09-working-with-range-data/")
 dbsnp137 <- import("mm10_snp137_chr1_trunc.bed.gz")
 ```
 
-#2. Collapse all overlapping exons in the mouse TranscriptDb object#
+#2. Collapse all overlapping exons in the mouse TranscriptDb object
 
 ```{r}
 collapsed_exons <- reduce(exons(txdb), ignore.strand=TRUE) #extract and collapse all overlapping exons with reduce()
 chr1_collapsed_exons <- collapsed_exons[seqnames(collapsed_exons) == "chr1"]
 ```
 
-#3. Inspect the variant file before extracting varients in exons#
+#3. Inspect the variant file before extracting varients in exons
 
 ```{r}
 summary(width(dbsnp137))
 ```
 
-#4. Adjust the width of variants#
+#4. Adjust the width of variants
 
 ```{r}
 dbsnp137_resized <- dbsnp137
@@ -52,53 +52,54 @@ zw_i <- width(dbsnp137_resized) == 0
 dbsnp137_resized[zw_i] <- resize(dbsnp137_resized[zw_i], width=1)
 ```
 
-#5. Pull out variants that overlap exons on chromosome 1#
+#5. Pull out variants that overlap exons on chromosome 1
 
 ```{r}
 hits <- findOverlaps(dbsnp137_resized, chr1_collapsed_exons, 
         ignore.strand=TRUE)
 ```
 
-#6. Determine the number of variants and the proportion of variants that are exonic#
+#6. Determine the number of variants and the proportion of variants that are exonic
 
 ```{r}
 length(unique(queryHits(hits))) 
 length(unique(queryHits(hits)))/length(dbsnp137_resized)
 ```
 
-#7. Find the number of variants per exon#
+#7. Find the number of variants per exon
 
 ```{r}
 var_counts <- countOverlaps(chr1_collapsed_exons, dbsnp137_resized, ignore.strand=TRUE)
 ```
 
-#8. Append to the GRanges object that includes exons#
+#8. Append to the GRanges object that includes exons
 
 ```{r}
 chr1_collapsed_exons$num_vars <- var_counts 
 ```
 
-#9. File output#
+#9. File output
 
 ```{r}
 setwd("C:/Users/user/Ranges-Assignment/")
 write.table(chr1_collapsed_exons, file = "NumberVariantsperExon.txt", row.names = FALSE) #write a .txt file 
 ```
 
-## Bonus##
+## Bonus
 
 Buffalo book Chapter 9, pp 314-319
 
-#Retrieving promoter regions#
+#Retrieving promoter regions
 
-#1. Set up#
+#1. Set up
 
 ```{r}
 setwd("C:/Users/user/bds-files/chapter-09-working-with-range-data/")
 mm_gtf <- import('Mus_musculus.GRCm38.75_chr1.gtf.gz')
 ```
 
-#2. Flank and promoters#
+#2. Flank and promoters
+
 (1) Select protein coding genes by subsetting the **gene_biotype** column.
 ```{r}
 table(mm_gtf$gene_biotype)
@@ -121,7 +122,7 @@ chr1_pcg_3kb_up2 <- promoters(chr1_pcg, upstream=3000, downstream=0) #mimic flan
 identical(chr1_pcg_3kb_up, chr1_pcg_3kb_up2) #show the result
 ```
 
-#3. Connection genomic ranges with sequence data#
+#3. Connection genomic ranges with sequence data
 
 ```{r}
 library(BiocInstaller)
@@ -172,7 +173,7 @@ chr1_3kb_seqs <- getSeq(mm_gm, chr1_pcg_3kb_up)
 chr1_3kb_seqs
 ```
 
-#4. File output#
+#4. File output
 
 Write the sequences to a FASTA file.
 ```{r}
